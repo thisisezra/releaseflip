@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-const RF_VERSION = '0.1.0';
+const RF_VERSION = '0.1.1';
 
 function rf_send(int $status, array $body): void
 {
@@ -28,7 +28,13 @@ function rf_self(): string
 function rf_config(): array
 {
     $webroot = dirname(rf_self());
-    $candidates = array_unique([dirname($webroot) . '/releaseflip.config.php', $webroot . '/releaseflip.config.php', dirname(__DIR__) . '/releaseflip.config.php', __DIR__ . '/releaseflip.config.php']);
+    $candidates = array_unique([
+        dirname($webroot) . '/releaseflip.' . basename($webroot) . '.config.php',
+        dirname($webroot) . '/releaseflip.config.php',
+        $webroot . '/releaseflip.config.php',
+        dirname(__DIR__) . '/releaseflip.config.php',
+        __DIR__ . '/releaseflip.config.php',
+    ]);
     foreach ($candidates as $path) {
         if (!is_file($path)) {
             continue;
@@ -50,7 +56,7 @@ function rf_config(): array
         $config['config_path'] = $path;
         return $config;
     }
-    rf_fail(500, 'config_missing', 'Create releaseflip.config.php one folder above the web root, or next to releaseflip.php.');
+    rf_fail(500, 'config_missing', 'Create releaseflip.' . basename($webroot) . '.config.php or releaseflip.config.php one folder above the web root, or releaseflip.config.php next to releaseflip.php.');
     return [];
 }
 

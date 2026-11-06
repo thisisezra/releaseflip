@@ -6,6 +6,8 @@ return [
     'protect' => [
         '.htaccess',
         '.user.ini',
+        '.well-known/',
+        'cgi-bin/',
         'config.php',
         'uploads/',
     ],

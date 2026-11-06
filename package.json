@@ -1,6 +1,6 @@
 {
   "name": "releaseflip",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Atomic deploys and instant rollback for shared hosting. No SSH, no symlinks, and protected files like .htaccess are never overwritten.",
   "keywords": [
     "deploy",

@@ -64,7 +64,7 @@ await write(join(docroot, "brand/marks/logo.svg"), "LIVE-LOGO");
 await write(join(docroot, "uploads/photo-1.jpg"), "PHOTO-1");
 await copyFile(join(repo, "server/releaseflip.php"), join(docroot, "releaseflip.php"));
 await write(
-  join(host, "releaseflip.config.php"),
+  join(host, mode === "rename" ? "releaseflip.public_html.config.php" : "releaseflip.config.php"),
   `<?php
 return [
     'token_sha256' => '${tokenHash}',

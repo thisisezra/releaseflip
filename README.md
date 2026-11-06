@@ -63,6 +63,8 @@ return [
     'protect' => [
         '.htaccess',
         '.user.ini',
+        '.well-known/',
+        'cgi-bin/',
         'config.php',
         'uploads/',
     ],
@@ -71,10 +73,18 @@ return [
 ];
 ```
 
+Keep `.well-known/` and `cgi-bin/` in the list on cPanel: AutoSSL uses `.well-known/` to issue and
+renew your certificate.
+
 **3. Upload both files** with your host's file manager:
 
 - `releaseflip.config.php` goes **one folder above** your web root (next to `public_html`).
 - `releaseflip.php` goes **into** your web root.
+
+On cPanel, every site's folder usually sits directly in your home folder, so they all share the same
+"folder above". Give each site's config its own name, `releaseflip.<site-folder>.config.php`. For
+example, `releaseflip.shop.example.com.config.php` for the site in `~/shop.example.com`. The
+receiver looks for that name first.
 
 **4. Check the connection**
 
@@ -162,10 +172,15 @@ folder renames in a row, which leaves a gap of well under a millisecond. In test
 
 **`symlink`: truly atomic.** The web root becomes a symlink to the live release, and switching
 replaces it in one operation. In testing, none of about 2,900 requests made during flips failed. It
-needs a host that follows a symlinked web root (most cPanel hosts do), so test it on a subdomain
-first. One caveat for PHP apps: PHP caches resolved file paths (`realpath_cache_ttl`, 120 seconds
-by default), so PHP pages may keep running the previous release's code for up to two minutes after
-a flip. Static files switch instantly.
+needs a host that follows a symlinked web root, so test it on a subdomain first. On LiteSpeed it
+works, and PHP pages switched immediately. On Apache with PHP-FPM, PHP's path cache
+(`realpath_cache_ttl`, 120 seconds by default) may keep running the previous release's PHP code for
+up to two minutes after a flip.
+
+**LiteSpeed servers** (common on cPanel hosts) cache open files briefly. For up to about one second
+after a flip, a request can still get the previous release's copy of a static file. It is always a
+complete file from the old release, never a broken one. This happens in both modes, and it comes
+from the server, not from releaseflip.
 
 ## Security
 
@@ -204,6 +219,24 @@ throughout each flip. It runs once per flip mode:
 | Old releases pruned, original kept | pass | pass |
 | `../` zip paths and corrupted uploads rejected, site unchanged | pass | pass |
 | Failed page loads during flips | about 0.1% | 0 |
+
+### On a real host
+
+Also run end to end against a live cPanel subdomain (LiteSpeed, PHP 8.2, HTTPS) in both flip modes,
+with four parallel page requests running throughout every deploy and rollback:
+
+| | rename | symlink |
+|---|---|---|
+| `check`: PHP zip support and permissions | pass | pass |
+| 3 MB release sent in 1 MB chunks, arrives byte-identical | pass | pass |
+| Live `.htaccess` kept while every release shipped a different one | pass | pass |
+| `.well-known/` and `cgi-bin/` untouched | pass | pass |
+| Files removed from a release return 404 | pass | pass |
+| Rollback walks back one release at a time to the original site, then stops | pass | pass |
+| Pruning keeps 5 releases plus the original | pass | pass |
+| Failed page loads during flips | 0 of about 500 | 0 of about 260 |
+| Previous copy of a static file served after a flip (LiteSpeed) | up to about 1 s | up to about 1 s |
+| PHP pages serving the previous release after a flip | n/a | never |
 
 ## License
 

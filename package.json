@@ -1,0 +1,37 @@
+{
+  "name": "releaseflip",
+  "version": "0.1.0",
+  "description": "Atomic deploys and instant rollback for shared hosting. No SSH, no symlinks, and protected files like .htaccess are never overwritten.",
+  "keywords": [
+    "deploy",
+    "atomic-deploy",
+    "rollback",
+    "shared-hosting",
+    "cpanel",
+    "php",
+    "github-action",
+    "zero-downtime"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "releaseflip": "bin/releaseflip.mjs"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "server"
+  ],
+  "engines": {
+    "node": ">=20.15"
+  },
+  "scripts": {
+    "test": "node test/e2e.mjs rename && node test/e2e.mjs symlink"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thisisezra/releaseflip.git"
+  },
+  "homepage": "https://github.com/thisisezra/releaseflip#readme",
+  "bugs": "https://github.com/thisisezra/releaseflip/issues"
+}

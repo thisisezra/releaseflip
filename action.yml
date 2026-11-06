@@ -1,0 +1,40 @@
+name: releaseflip deploy
+description: Atomic deploys and instant rollback for shared hosting, with no SSH.
+branding:
+  icon: refresh-cw
+  color: green
+inputs:
+  url:
+    description: Address of releaseflip.php on your server, for example https://example.com/releaseflip.php
+    required: true
+  token:
+    description: The token printed by "releaseflip setup". Pass it from a repository secret.
+    required: true
+  source:
+    description: Folder to deploy.
+    required: false
+    default: .
+  command:
+    description: deploy, rollback, list or check.
+    required: false
+    default: deploy
+  exclude:
+    description: Space-separated patterns to leave out of the package.
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - name: Run releaseflip
+      shell: bash
+      env:
+        RELEASEFLIP_TOKEN: ${{ inputs.token }}
+        RF_URL: ${{ inputs.url }}
+        RF_SOURCE: ${{ inputs.source }}
+        RF_COMMAND: ${{ inputs.command }}
+        RF_EXCLUDE: ${{ inputs.exclude }}
+      run: |
+        args=("$RF_COMMAND" --url "$RF_URL")
+        if [ "$RF_COMMAND" = "deploy" ]; then args+=("$RF_SOURCE"); fi
+        for pattern in $RF_EXCLUDE; do args+=(--exclude "$pattern"); done
+        node "$GITHUB_ACTION_PATH/bin/releaseflip.mjs" "${args[@]}"
